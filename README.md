@@ -47,3 +47,5 @@ Copyright © 2026 Pr0Trebor. All rights reserved.
 
 This project is published for educational and portfolio demonstration purposes only. **No license is granted** for public or commercial redistribution, modification, or cloning outside of GitHub. If you wish to use or adapt this project, please contact the author for explicit permission.
 ---
+<img width="1895" height="880" alt="image" src="https://github.com/user-attachments/assets/614d226e-2dad-4af1-afac-45a22e566a43" />
+
