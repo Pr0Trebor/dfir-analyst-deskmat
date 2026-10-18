@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC & DFIR Analyst Deskmat - V 1.0</title>
+
+<style>
+:root {
+    --bg: #070b11;
+    --bg-glow-1: rgba(63,185,80,.07);
+    --bg-glow-2: rgba(88,166,255,.07);
+    --panel: #121820;
+    --panel-2: #0e131a;
+    --command: #0a0e14;
+    --border: #28303a;
+    --border-soft: #1c232c;
+    --text: #c9d1d9;
+    --muted: #7d8793;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --yellow: #e3b341;
+    --red: #ff6b63;
+    --purple: #bc8cff;
+    --cyan: #39c5cf;
+    --orange: #f0883e;
+    --white: #f0f6fc;
+    --accent: var(--green);
+    --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--mono);
+    line-height: 1.5;
+    background:
+        radial-gradient(900px 500px at 8% -5%, var(--bg-glow-1), transparent 60%),
+        radial-gradient(900px 500px at 95% 0%, var(--bg-glow-2), transparent 60%),
+        var(--bg);
+    background-attachment: fixed;
+}
+
+::selection { background: rgba(88,166,255,.3); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #27303a; border-radius: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ============ HEADER ============ */
+header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(1,4,9,.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+}
+header::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), var(--blue), transparent);
+    opacity: .55;
+}
+.header-inner, .toolbar, .container { width: min(1800px, calc(100% - 40px)); margin: auto; }
+.header-inner { padding: 18px 0 12px; }
+
+.brand h1 {
+    margin: 0; color: var(--white); font-size: 24px; letter-spacing: 2px; font-weight: 800;
+    display: flex; align-items: center; gap: 12px;
+}
+.brand h1::before {
+    content: ""; width: 11px; height: 11px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 0 4px rgba(63,185,80,.18), 0 0 14px var(--green);
+    animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(63,185,80,.05), 0 0 20px var(--green); } }
+.brand-sub { color: var(--muted); font-size: 12px; margin-top: 6px; letter-spacing: .3px; }
+
+/* ============ TOOLBAR ============ */
+.toolbar { padding: 4px 0 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.search-wrap { flex: 1 1 340px; min-width: 260px; position: relative; }
+#search {
+    width: 100%; height: 38px; background: var(--panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0 56px 0 14px;
+    outline: none; font: inherit; font-size: 13px; transition: .15s;
+}
+#search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
+.search-hint {
+    position: absolute; right: 10px; top: 9px; color: var(--muted); font-size: 11px;
+    border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; pointer-events: none;
+}
+button { font: inherit; }
+.filter-btn, .tool-btn {
+    height: 38px; background: var(--panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0 14px;
+    cursor: pointer; transition: .15s; font-size: 12px; letter-spacing: .6px;
+}
+.filter-btn:hover, .tool-btn:hover { border-color: var(--blue); color: var(--white); transform: translateY(-1px); }
+.filter-btn.active {
+    border-color: var(--green); color: var(--green);
+    background: rgba(63,185,80,.1); box-shadow: inset 0 0 0 1px rgba(63,185,80,.25);
+}
+.tool-btn { color: var(--muted); }
+
+/* ============ MAIN ============ */
+.container { padding: 32px 0 50px; }
+.section { margin-bottom: 46px; }
+.section-header {
+    display: flex; align-items: center; gap: 14px; margin: 0 0 18px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.section-header::before {
+    content: ">_"; color: var(--green); font-weight: 800; font-size: 14px;
+    background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3);
+    border-radius: 6px; padding: 3px 8px;
+}
+.section-header h2 { margin: 0; color: var(--white); font-size: 18px; letter-spacing: 1.5px; }
+.section-header .section-desc { color: var(--muted); font-size: 12px; font-weight: normal; margin-left: auto; text-align: right; }
+
+/* ============ GRID / CARDS ============ */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+
+.card {
+    background: linear-gradient(180deg, var(--panel), #0f141b);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    border-radius: 10px; overflow: hidden; min-width: 0;
+    transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.card:hover {
+    border-color: #3b4552; border-top-color: var(--accent);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    transform: translateY(-2px);
+}
+.card.hidden { display: none; }
+.card[data-category~="windows"] { --accent: var(--blue); }
+.card[data-category~="linux"]   { --accent: var(--orange); }
+.card[data-category~="dfir"]    { --accent: var(--purple); }
+.card[data-category~="persistence"] { --accent: var(--yellow); }
+.card.wide { grid-column: span 2; }
+
+.card-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 13px 16px; background: rgba(0,0,0,.25);
+    border-bottom: 1px solid var(--border);
+    color: var(--white); font-size: 13px; font-weight: 800; letter-spacing: 1px;
+}
+.card-title .tag {
+    color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: .6px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-radius: 20px; padding: 2px 9px; white-space: nowrap;
+}
+
+/* ============ COMMANDS ============ */
+.command {
+    margin: 9px 10px; padding: 10px 12px;
+    background: var(--command); border: 1px solid var(--border-soft);
+    border-left: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    border-radius: 6px; transition: .15s;
+}
+.command:hover { border-color: #3a4450; border-left-color: var(--accent); background: #0c1117; }
+.command-top { display: flex; gap: 10px; align-items: flex-start; }
+.command pre {
+    flex: 1; min-width: 0; margin: 0; white-space: pre-wrap; word-break: break-word;
+    color: #e6edf3; font-family: var(--mono); font-size: 12px; line-height: 1.55;
+}
+.command-description { color: var(--muted); font-size: 11px; margin-top: 6px; font-family: var(--sans); }
+
+.copy-btn {
+    flex: 0 0 auto; border: 1px solid var(--border); background: #161b22; color: var(--muted);
+    border-radius: 5px; cursor: pointer; font-size: 9px; padding: 4px 8px; letter-spacing: .5px;
+    opacity: .55; transition: .15s;
+}
+.command:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { color: var(--white); border-color: var(--blue); }
+.copy-btn.copied { color: var(--green); border-color: var(--green); opacity: 1; }
+
+/* ============ EVENT TABLE (BIGGER) ============ */
+.event-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.event-table th, .event-table td {
+    text-align: left; padding: 9px 12px; border-bottom: 1px solid rgba(48,54,61,.55);
+    vertical-align: middle;
+}
+.event-table th {
+    color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: 1.2px;
+    text-transform: uppercase; background: rgba(0,0,0,.3);
+    position: sticky; top: 0;
+}
+.event-table tbody tr { transition: background .12s; }
+.event-table tbody tr:hover { background: rgba(88,166,255,.07); }
+.event-table td:first-child {
+    color: var(--yellow); font-weight: 800; font-size: 15px; width: 62px; letter-spacing: .5px;
+}
+.event-table td:nth-child(2) { color: #e6edf3; font-family: var(--sans); font-size: 13.5px; }
+.event-table td:nth-child(2) small { display: block; margin-top: 2px; color: var(--cyan); font-family: var(--mono); font-size: 10.5px; }
+.event-table td:nth-child(3) { text-align: right; white-space: nowrap; }
+.mitre { display: block; margin-top: 4px; color: var(--muted); font-family: var(--mono); font-size: 10px; }
+.event-table tr:last-child td { border-bottom: 0; }
+
+.badge {
+    display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: .8px; text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
+    border: 1px solid; white-space: nowrap;
+}
+.b-logon   { color: var(--green);  border-color: rgba(63,185,80,.4);  background: rgba(63,185,80,.1); }
+.b-fail    { color: var(--red);    border-color: rgba(255,107,99,.45); background: rgba(255,107,99,.1); }
+.b-priv    { color: var(--orange); border-color: rgba(240,136,62,.45); background: rgba(240,136,62,.1); }
+.b-proc    { color: var(--cyan);   border-color: rgba(57,197,207,.4); background: rgba(57,197,207,.1); }
+.b-persist { color: var(--yellow); border-color: rgba(227,179,65,.45); background: rgba(227,179,65,.1); }
+.b-acct    { color: var(--purple); border-color: rgba(188,140,255,.4); background: rgba(188,140,255,.1); }
+.b-kerb    { color: var(--blue);   border-color: rgba(88,166,255,.4); background: rgba(88,166,255,.1); }
+.b-share   { color: #79c0ff;       border-color: rgba(121,192,255,.35); background: rgba(121,192,255,.08); }
+.b-evade   { color: #fff; border-color: var(--red); background: rgba(255,107,99,.35); }
+
+.legend {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 16px;
+    border-top: 1px solid var(--border); background: rgba(0,0,0,.2);
+}
+
+/* ============ ARTIFACTS ============ */
+.artifact-group {
+    margin: 9px 10px; padding: 10px 12px; background: var(--command);
+    border: 1px solid var(--border-soft); border-left: 3px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    border-radius: 6px;
+}
+.artifact-label { color: var(--yellow); font-size: 11px; margin-bottom: 6px; font-weight: 800; letter-spacing: .8px; }
+.artifact-value { color: var(--cyan); font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+.path-desc { display: block; color: var(--muted); margin-top: 4px; font-size: 11px; font-family: var(--sans); }
+
+/* ============ NOTES ============ */
+.note {
+    margin: 10px; border-left: 3px solid var(--yellow); background: rgba(227,179,65,.07);
+    border-radius: 0 6px 6px 0; padding: 11px 13px; color: var(--muted); font-size: 11px; font-family: var(--sans);
+}
+.note strong { color: var(--yellow); }
+
+/* ============ IR FLOW ============ */
+.ir-flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.ir-step {
+    position: relative; padding: 18px 14px; border: 1px solid var(--border); border-radius: 10px;
+    background: linear-gradient(180deg, var(--panel), #0f141b); transition: .2s;
+}
+.ir-step:hover { border-color: var(--green); transform: translateY(-2px); }
+.ir-step:not(:last-child)::after {
+    content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%);
+    color: var(--green); font-size: 14px; z-index: 2; background: var(--bg); border-radius: 50%; width: 18px; text-align: center;
+}
+.ir-number { color: var(--green); font-size: 22px; font-weight: 800; margin-bottom: 6px; opacity: .85; }
+.ir-title { color: var(--white); font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; }
+.ir-text { color: var(--muted); font-size: 11px; font-family: var(--sans); }
+
+/* ============ EMPTY / FOOTER ============ */
+.empty { display: none; color: var(--muted); text-align: center; padding: 45px; border: 1px dashed var(--border); border-radius: 10px; }
+footer { border-top: 1px solid var(--border); margin-top: 45px; padding: 20px 0 10px; color: var(--muted); font-size: 11px; text-align: center; }
+
+/* ============ DESKMAT MODE ============ */
+body.deskmat .header-inner, body.deskmat .toolbar, body.deskmat .container { width: min(1900px, calc(100% - 28px)); }
+body.deskmat .header-inner { padding: 11px 0 8px; }
+body.deskmat .brand h1 { font-size: 19px; }
+body.deskmat .brand-sub { font-size: 10px; margin-top: 3px; }
+body.deskmat .toolbar { padding-bottom: 9px; }
+body.deskmat #search, body.deskmat .filter-btn, body.deskmat .tool-btn { height: 32px; }
+body.deskmat .container { padding-top: 18px; }
+body.deskmat .section { margin-bottom: 24px; }
+body.deskmat .section-header { margin-bottom: 10px; padding-bottom: 6px; }
+body.deskmat .section-header h2 { font-size: 14px; }
+body.deskmat .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+body.deskmat .card-title { padding: 9px 11px; font-size: 11px; }
+body.deskmat .command { margin: 6px 7px; padding: 7px 9px; }
+body.deskmat .command pre { font-size: 10px; }
+body.deskmat .command-description { font-size: 9px; margin-top: 4px; }
+body.deskmat .copy-btn { font-size: 8px; padding: 3px 5px; }
+body.deskmat .artifact-group { margin: 6px 7px; padding: 7px 9px; }
+body.deskmat .artifact-label, body.deskmat .artifact-value { font-size: 9px; }
+body.deskmat .path-desc { font-size: 9px; }
+body.deskmat .event-table { font-size: 12px; }
+body.deskmat .event-table th, body.deskmat .event-table td { padding: 6px 10px; }
+body.deskmat .event-table td:first-child { font-size: 13px; width: 64px; }
+body.deskmat .event-table td:nth-child(2) { font-size: 11.5px; }
+body.deskmat .event-table td:nth-child(2) small { font-size: 9px; }
+body.deskmat .mitre { font-size: 8px; }
+body.deskmat .badge { font-size: 8px; padding: 2px 6px; }
+body.deskmat .note { margin: 7px; padding: 7px 9px; font-size: 9px; }
+body.deskmat .ir-flow { gap: 8px; }
+body.deskmat .ir-step { padding: 11px; }
+body.deskmat .ir-number { font-size: 15px; }
+body.deskmat .ir-title { font-size: 10px; }
+body.deskmat .ir-text { font-size: 9px; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 1250px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.deskmat .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ir-flow { grid-template-columns: repeat(3, 1fr); }
+    .ir-step::after { display: none; }
+}
+@media (max-width: 850px) {
+    .header-inner, .toolbar, .container { width: min(100% - 24px, 1800px); }
+    .grid, body.deskmat .grid { grid-template-columns: 1fr; }
+    .card.wide { grid-column: auto; }
+    .ir-flow { grid-template-columns: 1fr 1fr; }
+    .brand h1 { font-size: 18px; }
+    .section-header { flex-wrap: wrap; }
+    .section-header .section-desc { margin-left: 0; text-align: left; flex-basis: 100%; }
+    .event-table td:nth-child(3) { white-space: normal; }
+}
+@media (max-width: 520px) {
+    .ir-flow { grid-template-columns: 1fr; }
+    .search-wrap { flex-basis: 100%; }
+    .filter-btn, .tool-btn { flex: 1; padding: 0 7px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="brand">
+            <div>
+                <h1>SOC &amp; DFIR ANALYST DESKMAT - V 1.0</h1>
+                <div class="brand-sub">Open-source quick reference &bull; Windows &bull; Linux &bull; PowerShell &bull; DFIR &bull; Incident Response</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-wrap">
+            <input id="search" type="search" placeholder="Search commands, Event IDs, artifacts..." autocomplete="off">
+            <span class="search-hint">Ctrl+K</span>
+        </div>
+        <button class="filter-btn active" data-filter="all">ALL</button>
+        <button class="filter-btn" data-filter="windows">WINDOWS</button>
+        <button class="filter-btn" data-filter="linux">LINUX</button>
+        <button class="filter-btn" data-filter="dfir">DFIR</button>
+        <button class="filter-btn" data-filter="network">NETWORK</button>
+        <button class="filter-btn" data-filter="persistence">PERSISTENCE</button>
+        <button class="tool-btn" id="deskmatBtn">DESKMAT MODE</button>
+    </div>
+</header>
+
+<main class="container">
+
+<!-- ========================= WINDOWS ========================= -->
+<section class="section" data-section="windows">
+    <div class="section-header">
+        <h2>WINDOWS ANALYST</h2>
+        <span class="section-desc">Events, PowerShell, CMD, processes and host triage</span>
+    </div>
+
+    <div class="grid">
+
+        <!-- WINDOWS EVENT IDS (wide, bigger text) -->
+        <article class="card" data-category="windows"
+            data-search="windows event ids security authentication logon process creation persistence services account kerberos smb audit 4624 4625 4634 4647 4672 4688 4697 4698 4702 4720 4740 4768 4769 4771 4776 5140 5145 7045 1102">
+            <div class="card-title">WINDOWS EVENT IDS <span class="tag">SECURITY / AUDIT</span></div>
+            <table class="event-table">
+                <thead><tr><th>ID</th><th>What to investigate / key field</th><th style="text-align:right">Type / MITRE</th></tr></thead>
+                <tbody>
+                    <tr><td>4624</td><td>Successful logon<small>Logon Type, Source IP</small></td><td><span class="badge b-logon">Logon</span><span class="mitre">T1078</span></td></tr>
+                    <tr><td>4625</td><td>Failed logon<small>Status / SubStatus, Source IP</small></td><td><span class="badge b-fail">Failed</span><span class="mitre">T1110</span></td></tr>
+                    <tr><td>4634</td><td>Logoff<small>Logon ID</small></td><td><span class="badge b-logon">Logon</span></td></tr>
+                    <tr><td>4647</td><td>User initiated logoff<small>Account Name</small></td><td><span class="badge b-logon">Logon</span></td></tr>
+                    <tr><td>4672</td><td>Special privileges assigned to new logon<small>Privileges list</small></td><td><span class="badge b-priv">Privilege</span><span class="mitre">T1078</span></td></tr>
+                    <tr><td>4688</td><td>New process created<small>Command Line, Parent Process</small></td><td><span class="badge b-proc">Process</span><span class="mitre">T1059</span></td></tr>
+                    <tr><td>4697</td><td>Service installed<small>Service File Name</small></td><td><span class="badge b-persist">Persistence</span><span class="mitre">T1543.003</span></td></tr>
+                    <tr><td>4698</td><td>Scheduled task created<small>Task Content (XML)</small></td><td><span class="badge b-persist">Persistence</span><span class="mitre">T1053.005</span></td></tr>
+                    <tr><td>4702</td><td>Scheduled task updated<small>Task Content (XML)</small></td><td><span class="badge b-persist">Persistence</span><span class="mitre">T1053.005</span></td></tr>
+                    <tr><td>4720</td><td>User account created<small>Target Account, Subject</small></td><td><span class="badge b-acct">Account</span><span class="mitre">T1136</span></td></tr>
+                    <tr><td>4740</td><td>User account locked out<small>Caller Computer Name</small></td><td><span class="badge b-acct">Account</span><span class="mitre">T1110</span></td></tr>
+                    <tr><td>4768</td><td>Kerberos TGT requested<small>Result Code, Encryption Type</small></td><td><span class="badge b-kerb">Kerberos</span><span class="mitre">T1558</span></td></tr>
+                    <tr><td>4769</td><td>Kerberos service ticket requested<small>Ticket Encryption (0x17 = RC4)</small></td><td><span class="badge b-kerb">Kerberos</span><span class="mitre">T1558.003</span></td></tr>
+                    <tr><td>4771</td><td>Kerberos pre-authentication failed<small>Failure Code, Client Address</small></td><td><span class="badge b-fail">Failed</span><span class="mitre">T1110</span></td></tr>
+                    <tr><td>4776</td><td>Credential validation<small>Workstation, Error Code</small></td><td><span class="badge b-kerb">Auth</span><span class="mitre">T1110</span></td></tr>
+                    <tr><td>5140</td><td>Network share accessed<small>Share Name, Source Address</small></td><td><span class="badge b-share">Share</span><span class="mitre">T1021.002</span></td></tr>
+                    <tr><td>5145</td><td>Detailed network share access<small>Relative Target Name</small></td><td><span class="badge b-share">Share</span><span class="mitre">T1021.002</span></td></tr>
+                    <tr><td>7045</td><td>New service installed<small>Service File Name, Account</small></td><td><span class="badge b-persist">Persistence</span><span class="mitre">T1543.003</span></td></tr>
+                    <tr><td>1102</td><td>Security audit log cleared<small>Account that cleared the log</small></td><td><span class="badge b-evade">Evasion</span><span class="mitre">T1070.001</span></td></tr>
+                </tbody>
+            </table>
+        </article>
+
+        <!-- POWERSHELL -->
+        <article class="card" data-category="windows"
+            data-search="powershell process service scheduled task hash file metadata tcp connection event log win event">
+            <div class="card-title">POWERSHELL <span class="tag">LIVE TRIAGE</span></div>
+
+            <div class="command"><div class="command-top"><pre>Get-Process</pre><button class="copy-btn">COPY</button></div><div class="command-description">List running processes</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Process | Sort-Object CPU -Descending</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find processes consuming the most CPU</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Process -Id &lt;PID&gt; | Select-Object *</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect detailed process properties</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Service</pre><button class="copy-btn">COPY</button></div><div class="command-description">List Windows services</div></div>
+            <div class="command"><div class="command-top"><pre>Get-ScheduledTask</pre><button class="copy-btn">COPY</button></div><div class="command-description">List scheduled tasks</div></div>
+            <div class="command"><div class="command-top"><pre>Get-NetTCPConnection</pre><button class="copy-btn">COPY</button></div><div class="command-description">List TCP connections and connection state</div></div>
+            <div class="command"><div class="command-top"><pre>Get-NetTCPConnection | Where-Object State -eq "Listen"</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show listening TCP ports</div></div>
+        </article>
+
+        <!-- CMD -->
+        <article class="card" data-category="windows"
+            data-search="cmd windows triage whoami hostname systeminfo tasklist svc netstat ipconfig dns arp schtasks service event log certutil">
+            <div class="card-title">CMD / WINDOWS TRIAGE <span class="tag">FAST TRIAGE</span></div>
+
+            <div class="command"><div class="command-top"><pre>whoami /all</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display current identity, groups and privileges</div></div>
+            <div class="command"><div class="command-top"><pre>hostname</pre><button class="copy-btn">COPY</button></div><div class="command-description">Get the hostname</div></div>
+            <div class="command"><div class="command-top"><pre>systeminfo</pre><button class="copy-btn">COPY</button></div><div class="command-description">Collect OS and system information</div></div>
+            <div class="command"><div class="command-top"><pre>tasklist /v</pre><button class="copy-btn">COPY</button></div><div class="command-description">List processes with verbose details</div></div>
+            <div class="command"><div class="command-top"><pre>tasklist /svc</pre><button class="copy-btn">COPY</button></div><div class="command-description">Map running processes to services</div></div>
+            <div class="command"><div class="command-top"><pre>netstat -ano</pre><button class="copy-btn">COPY</button></div><div class="command-description">List connections, listening ports and PIDs</div></div>
+            <div class="command"><div class="command-top"><pre>netstat -abno</pre><button class="copy-btn">COPY</button></div><div class="command-description">Map connections to executables when permissions allow</div></div>
+            <div class="command"><div class="command-top"><pre>ipconfig /all</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display network configuration</div></div>
+            <div class="command"><div class="command-top"><pre>ipconfig /displaydns</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect local DNS resolver cache</div></div>
+            <div class="command"><div class="command-top"><pre>arp -a</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display ARP cache</div></div>
+            <div class="command"><div class="command-top"><pre>schtasks /query /fo LIST /v</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect scheduled tasks with details</div></div>
+            <div class="command"><div class="command-top"><pre>sc query</pre><button class="copy-btn">COPY</button></div><div class="command-description">List service states</div></div>
+        </article>
+
+        <!-- FILE ANALYSIS -->
+        <article class="card" data-category="windows dfir"
+            data-search="file analysis hash magic bytes header file type format hex metadata authenticode signature ads alternate data streams strings certutil executable">
+            <div class="card-title">FILE ANALYSIS <span class="tag">IOC / TRIAGE</span></div>
+
+            <div class="command"><div class="command-top"><pre>Get-FileHash .\filename.ext -Algorithm SHA256</pre><button class="copy-btn">COPY</button></div><div class="command-description">Calculate SHA256 hash</div></div>
+            <div class="command"><div class="command-top"><pre>Format-Hex -Path .\filename.ext -Count 16</pre><button class="copy-btn">COPY</button></div><div class="command-description">Determine the actual file type from the file header / magic bytes</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Item .\filename.ext | Format-List *</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect file metadata, timestamps and attributes</div></div>
+            <div class="command"><div class="command-top"><pre>Get-AuthenticodeSignature .\filename.ext</pre><button class="copy-btn">COPY</button></div><div class="command-description">Check Authenticode signature and signer status</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Content .\filename.ext -AsByteStream -TotalCount 32</pre><button class="copy-btn">COPY</button></div><div class="command-description">Read the first bytes of a file (PowerShell 7+; on 5.1 use -Encoding Byte)</div></div>
+            <div class="command"><div class="command-top"><pre>certutil -dump .\filename.ext</pre><button class="copy-btn">COPY</button></div><div class="command-description">Dump the file as structured ASN.1 data (mainly for certificates / signed blobs, not a general hex viewer)</div></div>
+            <div class="command"><div class="command-top"><pre>certutil -hashfile .\filename.ext SHA256</pre><button class="copy-btn">COPY</button></div><div class="command-description">Calculate SHA256 hash from CMD</div></div>
+            <div class="command"><div class="command-top"><pre>strings.exe -n 6 .\filename.ext</pre><button class="copy-btn">COPY</button></div><div class="command-description">Extract printable strings from a suspicious file</div></div>
+            <div class="command"><div class="command-top"><pre>Get-ChildItem .\filename.ext -Force</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect file presence and hidden/system attributes</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Item .\filename.ext -Stream *</pre><button class="copy-btn">COPY</button></div><div class="command-description">List NTFS Alternate Data Streams</div></div>
+        </article>
+
+        <!-- PROCESS INVESTIGATION -->
+        <article class="card" data-category="windows dfir"
+            data-search="process investigation pid ppid parent process command line cim instance win32 process process tree">
+            <div class="card-title">PROCESS INVESTIGATION <span class="tag">PID / PPID</span></div>
+
+            <div class="command"><div class="command-top"><pre>Get-CimInstance Win32_Process |
+    Select-Object ProcessId,ParentProcessId,Name,CommandLine</pre><button class="copy-btn">COPY</button></div><div class="command-description">Review process → PID → PPID → executable → command line</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Process -Id &lt;PID&gt; | Select-Object *</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect detailed properties of a specific process</div></div>
+            <div class="command"><div class="command-top"><pre>Get-CimInstance Win32_Process |
+    Where-Object ProcessId -eq &lt;PID&gt; |
+    Select-Object *</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect detailed WMI process information for a PID</div></div>
+            <div class="command"><div class="command-top"><pre>Get-Process -Id &lt;PID&gt; | Select-Object Id,ProcessName,Path,StartTime</pre><button class="copy-btn">COPY</button></div><div class="command-description">Quickly identify executable path and process start time</div></div>
+            <div class="command"><div class="command-top"><pre>tasklist /v /fi "PID eq &lt;PID&gt;"</pre><button class="copy-btn">COPY</button></div><div class="command-description">Quick CMD lookup for a specific PID</div></div>
+
+            <div class="note"><strong>DFIR tip:</strong> A suspicious process is often more interesting when its <strong>PPID, command line, executable path and start time</strong> are considered together.</div>
+        </article>
+
+        <!-- REGISTRY -->
+        
+
+        <!-- SECURITY -->
+        <article class="card" data-category="windows dfir"
+            data-search="security event 4625 failed logon authentication event logs win event brute force">
+            <div class="card-title">SECURITY / AUTHENTICATION <span class="tag">EVENT LOG</span></div>
+
+            <div class="command"><div class="command-top"><pre>Get-WinEvent -FilterHashtable @{
+    LogName='Security'
+    Id=4624
+}</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find successful logon events</div></div>
+
+            <div class="command"><div class="command-top"><pre>Get-WinEvent -FilterHashtable @{
+    LogName='Security'
+    Id=4625
+}</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find failed logon events</div></div>
+            <div class="command"><div class="command-top"><pre>Get-WinEvent -FilterHashtable @{
+    LogName='Security'
+    Id=4688
+}</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find process creation events</div></div>
+            <div class="command"><div class="command-top"><pre>Get-WinEvent -ListLog *</pre><button class="copy-btn">COPY</button></div><div class="command-description">List available Windows Event Logs</div></div>
+            <div class="command"><div class="command-top"><pre>Get-WinEvent -LogName System -MaxEvents 50</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show the latest System events</div></div>
+            <div class="command"><div class="command-top"><pre>wevtutil el</pre><button class="copy-btn">COPY</button></div><div class="command-description">List available Windows Event Logs from CMD</div></div>
+        </article>
+
+        <!-- WINDOWS ARTIFACTS -->
+        <article class="card" data-category="windows dfir"
+            data-search="windows artifacts ntuser usrclass amcache registry system software sam security prefetch event logs appdata localappdata temp programdata public">
+            <div class="card-title">WINDOWS ARTIFACTS <span class="tag">DFIR</span></div>
+
+            <div class="artifact-group"><div class="artifact-label">USER / APPLICATION DATA</div><div class="artifact-value">%APPDATA%</div><span class="path-desc">User application data and persistence locations</span></div>
+            <div class="artifact-group"><div class="artifact-value">%LOCALAPPDATA%</div><span class="path-desc">Local application data, caches and user-writable locations</span></div>
+            <div class="artifact-group"><div class="artifact-value">%TEMP%</div><span class="path-desc">Temporary files frequently useful during malware triage</span></div>
+            <div class="artifact-group"><div class="artifact-value">C:\Windows\Temp</div><span class="path-desc">System-wide temporary files</span></div>
+            <div class="artifact-group"><div class="artifact-value">C:\ProgramData</div><span class="path-desc">Shared application data and potential persistence locations</span></div>
+            <div class="artifact-group"><div class="artifact-value">C:\Users\Public</div><span class="path-desc">Shared user-writable location worth checking for suspicious files</span></div>
+            <div class="artifact-group"><div class="artifact-value">C:\Windows\Prefetch</div><span class="path-desc">Application execution evidence and execution history context</span></div>
+            <div class="artifact-group"><div class="artifact-value">C:\Windows\System32\winevt\Logs</div><span class="path-desc">Windows Event Log files</span></div>
+            <div class="artifact-group"><div class="artifact-label">REGISTRY / USER ARTIFACTS</div><div class="artifact-value">NTUSER.DAT
+UsrClass.dat
+Amcache.hve
+SYSTEM
+SOFTWARE
+SAM
+SECURITY</div><span class="path-desc">High-value registry and execution-related forensic artifacts</span></div>
+        </article>
+
+    </div>
+</section>
+
+
+<!-- ========================= FORENSIC / DFIR ========================= -->
+<section class="section" data-section="dfir">
+    <div class="section-header">
+        <h2>FORENSIC / DFIR</h2>
+        <span class="section-desc">Live response, file triage and evidence discovery</span>
+    </div>
+
+    <div class="grid">
+
+        <!-- LINUX LIVE FORENSICS -->
+        <article class="card" data-category="linux dfir"
+            data-search="linux live forensics proc process ps pstree readlink environ status lsof">
+            <div class="card-title">LINUX LIVE FORENSICS <span class="tag">/PROC</span></div>
+
+            <div class="command"><div class="command-top"><pre>ls -la</pre><button class="copy-btn">COPY</button></div><div class="command-description">List files including hidden entries</div></div>
+            <div class="command"><div class="command-top"><pre>ps aux</pre><button class="copy-btn">COPY</button></div><div class="command-description">List running processes</div></div>
+            <div class="command"><div class="command-top"><pre>pstree -ap</pre><button class="copy-btn">COPY</button></div><div class="command-description">View process hierarchy with arguments and PIDs</div></div>
+            <div class="command"><div class="command-top"><pre>readlink /proc/&lt;PID&gt;/exe</pre><button class="copy-btn">COPY</button></div><div class="command-description">Identify the executable backing a process</div></div>
+            <div class="command"><div class="command-top"><pre>ls -la /proc/&lt;PID&gt;</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect the process /proc directory</div></div>
+            <div class="command"><div class="command-top"><pre>cat /proc/&lt;PID&gt;/cmdline</pre><button class="copy-btn">COPY</button></div><div class="command-description">Read the process command line</div></div>
+            <div class="command"><div class="command-top"><pre>cat /proc/&lt;PID&gt;/environ</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect process environment variables</div></div>
+            <div class="command"><div class="command-top"><pre>cat /proc/&lt;PID&gt;/status</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect process state, UID, GID and memory information</div></div>
+            <div class="command"><div class="command-top"><pre>lsof -p &lt;PID&gt;</pre><button class="copy-btn">COPY</button></div><div class="command-description">List files, sockets and other resources opened by a process</div></div>
+        </article>
+
+        <!-- FILE IOC -->
+        <article class="card" data-category="linux dfir"
+            data-search="linux file ioc triage sha256 md5 strings stat find suspicious files suid writable tmp">
+            <div class="card-title">FILE / IOC TRIAGE <span class="tag">HASH / METADATA</span></div>
+
+            <div class="command"><div class="command-top"><pre>file ./filename</pre><button class="copy-btn">COPY</button></div><div class="command-description">Identify file type using file signatures</div></div>
+            <div class="command"><div class="command-top"><pre>stat ./filename</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect timestamps, ownership, permissions and inode metadata</div></div>
+            <div class="command"><div class="command-top"><pre>sha256sum ./filename</pre><button class="copy-btn">COPY</button></div><div class="command-description">Calculate SHA256 hash</div></div>
+            <div class="command"><div class="command-top"><pre>md5sum ./filename</pre><button class="copy-btn">COPY</button></div><div class="command-description">Calculate MD5 hash for legacy IOC matching</div></div>
+            <div class="command"><div class="command-top"><pre>strings ./filename</pre><button class="copy-btn">COPY</button></div><div class="command-description">Extract printable strings</div></div>
+            <div class="command"><div class="command-top"><pre>find / -type f -mtime -1 2&gt;/dev/null</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find files modified within the last 24 hours</div></div>
+            <div class="command"><div class="command-top"><pre>find /tmp -type f -ls 2&gt;/dev/null</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect files under /tmp</div></div>
+            <div class="command"><div class="command-top"><pre>find / -perm -4000 -type f 2&gt;/dev/null</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find SUID binaries</div></div>
+            <div class="command"><div class="command-top"><pre>find /tmp /var/tmp /dev/shm -type f -writable 2&gt;/dev/null</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find writable files in common attacker staging directories</div></div>
+        </article>
+
+        <!-- NETWORK -->
+        <article class="card" data-category="linux network dfir"
+            data-search="linux network ss lsof sockets connections ports listening ip route neighbors">
+            <div class="card-title">NETWORK FORENSICS <span class="tag">SOCKETS</span></div>
+
+            <div class="command"><div class="command-top"><pre>ss -tulpn</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show listening TCP/UDP sockets and owning processes</div></div>
+            <div class="command"><div class="command-top"><pre>ss -tp</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show established TCP connections and processes</div></div>
+            <div class="command"><div class="command-top"><pre>ss -tan</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display TCP connections numerically</div></div>
+            <div class="command"><div class="command-top"><pre>lsof -i</pre><button class="copy-btn">COPY</button></div><div class="command-description">List network-related open files and sockets</div></div>
+            <div class="command"><div class="command-top"><pre>lsof -i :443</pre><button class="copy-btn">COPY</button></div><div class="command-description">Find processes using TCP/UDP port 443</div></div>
+            <div class="command"><div class="command-top"><pre>ip addr</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display network interfaces and addresses</div></div>
+            <div class="command"><div class="command-top"><pre>ip route</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display the routing table</div></div>
+            <div class="command"><div class="command-top"><pre>ip neigh</pre><button class="copy-btn">COPY</button></div><div class="command-description">Display the neighbor / ARP table</div></div>
+        </article>
+
+        <!-- LINUX AUTH LOGS -->
+        <article class="card" data-category="linux dfir"
+            data-search="linux login auth logs last lastb btmp wtmp ssh auth.log secure failed logins">
+            <div class="card-title">LINUX LOGINS / AUTH LOGS <span class="tag">WHO LOGGED IN</span></div>
+
+            <div class="command"><div class="command-top"><pre>last -a</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show successful logins and reboots from wtmp, with source host</div></div>
+            <div class="command"><div class="command-top"><pre>lastb -a</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show failed login attempts from btmp (needs root)</div></div>
+            <div class="command"><div class="command-top"><pre>tail -n 100 /var/log/auth.log</pre><button class="copy-btn">COPY</button></div><div class="command-description">Recent authentication events on Debian / Ubuntu (use /var/log/secure on RHEL)</div></div>
+            <div class="command"><div class="command-top"><pre>journalctl -u ssh --since today</pre><button class="copy-btn">COPY</button></div><div class="command-description">SSH service events from the systemd journal (unit may be sshd)</div></div>
+        </article>
+
+    </div>
+</section>
+
+
+<!-- ========================= PERSISTENCE / IR ========================= -->
+<section class="section" data-section="persistence">
+    <div class="section-header">
+        <h2>PERSISTENCE</h2>
+        <span class="section-desc">Common persistence locations on Windows and Linux</span>
+    </div>
+
+    <div class="grid">
+
+        <!-- PERSISTENCE -->
+        <article class="card" data-category="linux persistence"
+            data-search="linux persistence cron crontab systemctl systemd autostart">
+            <div class="card-title">LINUX PERSISTENCE <span class="tag">CHECK FIRST</span></div>
+
+            <div class="command"><div class="command-top"><pre>crontab -l</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect current user's cron jobs</div></div>
+            <div class="command"><div class="command-top"><pre>cat /etc/crontab</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect system cron configuration</div></div>
+            <div class="command"><div class="command-top"><pre>ls -la /etc/cron*</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect cron directories and scheduled jobs</div></div>
+            <div class="command"><div class="command-top"><pre>systemctl --type=service</pre><button class="copy-btn">COPY</button></div><div class="command-description">List currently loaded services</div></div>
+            <div class="command"><div class="command-top"><pre>systemctl list-unit-files</pre><button class="copy-btn">COPY</button></div><div class="command-description">List installed service unit files and their state</div></div>
+            <div class="command"><div class="command-top"><pre>ls -la ~/.config/autostart</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect user-level Linux desktop autostart entries</div></div>
+        </article>
+
+        <article class="card" data-category="windows persistence"
+            data-search="windows persistence registry run keys hklm hkcu startup autorun malware scheduled task service wmi subscription sc qc">
+            <div class="card-title">WINDOWS PERSISTENCE <span class="tag">AUTORUN</span></div>
+
+            <div class="command"><div class="command-top"><pre>Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run"</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect machine-wide programs configured to run at user logon</div></div>
+            <div class="command"><div class="command-top"><pre>Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect current-user programs configured to run at logon</div></div>
+            <div class="command"><div class="command-top"><pre>reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect machine-wide Run persistence from CMD</div></div>
+            <div class="command"><div class="command-top"><pre>reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect current-user Run persistence from CMD</div></div>
+
+            <div class="command"><div class="command-top"><pre>sc qc &lt;SERVICE&gt;</pre><button class="copy-btn">COPY</button></div><div class="command-description">Inspect service configuration and executable path</div></div>
+            <div class="command"><div class="command-top"><pre>Get-CimInstance Win32_Service |
+    Select-Object Name,State,StartMode,PathName</pre><button class="copy-btn">COPY</button></div><div class="command-description">List services with their binary path (look for odd paths and user-writable locations)</div></div>
+            <div class="command"><div class="command-top"><pre>Get-ScheduledTask | Where-Object { $_.TaskPath -notlike '\Microsoft\*' }</pre><button class="copy-btn">COPY</button></div><div class="command-description">Show scheduled tasks outside the default Microsoft task folders</div></div>
+            <div class="command"><div class="command-top"><pre>Get-CimInstance -Namespace root\subscription -ClassName __EventFilter</pre><button class="copy-btn">COPY</button></div><div class="command-description">WMI event subscription persistence: filters (also check __EventConsumer and __FilterToConsumerBinding)</div></div>
+
+            <div class="note"><strong>Why it matters:</strong> Run keys are a common persistence location. Look for unusual executable paths, scripts, temporary directories, user-writable locations and recently introduced values.</div>
+        </article>
+
+        <!-- INCIDENT RESPONSE -->
+        
+
+        <!-- IOC QUICK REFERENCE -->
+        
+
+    </div>
+</section>
+
+
+<!-- ========================= QUICK FLOW ========================= -->
+<section class="section">
+    <div class="section-header">
+        <h2>QUICK INVESTIGATION FLOW</h2>
+        <span class="section-desc">A practical first-pass sequence</span>
+    </div>
+
+    <div class="ir-flow">
+        <div class="ir-step"><div class="ir-number">01</div><div class="ir-title">IDENTITY</div><div class="ir-text">Who is logged in? What privileges are available?</div></div>
+        <div class="ir-step"><div class="ir-number">02</div><div class="ir-title">PROCESS</div><div class="ir-text">What is running? Check PID, PPID, path and command line.</div></div>
+        <div class="ir-step"><div class="ir-number">03</div><div class="ir-title">NETWORK</div><div class="ir-text">Which connections and listening ports are active?</div></div>
+        <div class="ir-step"><div class="ir-number">04</div><div class="ir-title">PERSISTENCE</div><div class="ir-text">Check services, tasks, Run keys, cron and autostart.</div></div>
+        <div class="ir-step"><div class="ir-number">05</div><div class="ir-title">FILE / IOC</div><div class="ir-text">Hash, identify, inspect metadata, strings and signatures.</div></div>
+        <div class="ir-step"><div class="ir-number">06</div><div class="ir-title">EVENTS</div><div class="ir-text">Correlate authentication, process creation and persistence events.</div></div>
+    </div>
+</section>
+
+<div id="empty" class="empty">No matching commands or sections found.</div>
+
+<footer>
+    SOC &amp; DFIR ANALYST DESKMAT &nbsp;&bull;&nbsp; Pr0Trebor &nbsp;&bull;&nbsp; Built with plain HTML / CSS / JavaScript
+</footer>
+
+</main>
+
+<script>
+/* COPY */
+document.querySelectorAll(".copy-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+        const command = button.closest(".command").querySelector("pre").innerText;
+        const done = () => {
+            button.innerText = "COPIED";
+            button.classList.add("copied");
+            setTimeout(() => { button.innerText = "COPY"; button.classList.remove("copied"); }, 1000);
+        };
+        try {
+            await navigator.clipboard.writeText(command);
+        } catch (error) {
+            const textarea = document.createElement("textarea");
+            textarea.value = command;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            textarea.remove();
+        }
+        done();
+    });
+});
+
+/* SEARCH / FILTER */
+const searchInput = document.getElementById("search");
+const filterButtons = document.querySelectorAll(".filter-btn");
+const cards = document.querySelectorAll(".card");
+const sections = document.querySelectorAll(".section[data-section]");
+const empty = document.getElementById("empty");
+let activeFilter = "all";
+
+function filterContent() {
+    const query = searchInput.value.trim().toLowerCase();
+    let visibleCards = 0;
+
+    cards.forEach(card => {
+        const categories = (card.dataset.category || "").toLowerCase().split(/\s+/);
+        const searchable = ((card.dataset.search || "") + " " + card.innerText).toLowerCase();
+        const visible = (activeFilter === "all" || categories.includes(activeFilter)) &&
+                        (query === "" || searchable.includes(query));
+        card.classList.toggle("hidden", !visible);
+        if (visible) visibleCards++;
+    });
+
+    sections.forEach(section => {
+        const any = [...section.querySelectorAll(".card")].some(c => !c.classList.contains("hidden"));
+        section.style.display = any ? "" : "none";
+    });
+
+    empty.style.display = visibleCards === 0 ? "block" : "none";
+}
+
+filterButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        activeFilter = button.dataset.filter;
+        filterContent();
+    });
+});
+
+searchInput.addEventListener("input", filterContent);
+
+/* CTRL + K */
+document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+    }
+    if (event.key === "Escape") {
+        searchInput.value = "";
+        searchInput.blur();
+        filterContent();
+    }
+});
+
+/* DESKMAT MODE */
+const deskmatBtn = document.getElementById("deskmatBtn");
+function updateDeskmatButton() {
+    deskmatBtn.innerText = document.body.classList.contains("deskmat") ? "NORMAL MODE" : "DESKMAT MODE";
+}
+deskmatBtn.addEventListener("click", () => {
+    document.body.classList.toggle("deskmat");
+    updateDeskmatButton();
+});
+updateDeskmatButton();
+
+filterContent();
+</script>
+
+</body>
+</html>
